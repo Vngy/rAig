@@ -65,7 +65,7 @@ Two phases sharing one core data model, the **Rig**:
 - The **Rig** holds: per-part triangulated meshes, a 2D skeleton with skin
   weights, and a parameter table mapping each named param to mesh deformations.
 
-**Dependencies:** mediapipe, psd-tools, numpy, scipy, opencv-python, triangle,
+**Dependencies:** mediapipe, psd-tools, numpy, scipy, opencv-python,
 moderngl, moderngl-window. Managed with `uv`.
 
 **CLI surface (the whole MVP):**
@@ -95,10 +95,13 @@ Map each PSD layer to a semantic part slot (`hair_front`, `eye_L`, `iris_L`,
 
 ### 1b. Mesh generation
 
-Per part: extract alpha channel → OpenCV contour → simplify → constrained
-Delaunay triangulation (`triangle`) with interior grid points. Mesh density is
-per-slot: dense for deformation-heavy parts (hair, torso), coarse for rigid
-parts (iris).
+Per part: extract alpha channel → OpenCV contour → simplify → triangulate.
+Triangulation: `scipy.spatial.Delaunay` over the simplified boundary points
+plus an interior grid of points, then cull triangles whose centroid falls
+outside the alpha mask. (Shewchuk's Triangle / the `triangle` package is
+avoided deliberately: it is licensed for non-commercial use only, which
+conflicts with rAig's MIT license.) Mesh density is per-slot: dense for
+deformation-heavy parts (hair, torso), coarse for rigid parts (iris).
 
 ### 1c. Skeleton fit + skin weights
 
@@ -114,7 +117,9 @@ Face parts use procedural parameter deformers instead of bones (Live2D-style):
 
 - `eye_l_open` / `eye_r_open` — eyelid mesh scales vertically over the iris;
   iris stencil-masked by the eye white
-- `mouth_open` (+ `mouth_form` if blendshapes support it) — mouth mesh interpolation
+- `mouth_open` — mouth mesh interpolation (required); `mouth_form`
+  (smile/frown from MediaPipe's mouth blendshape scores) is optional polish,
+  not required for MVP acceptance
 - `head_angle_x/y/z` — spherical-ish warp of the whole head group to fake 3D turn
 - `body_angle_x/y/z` — torso counter-rotation with per-layer parallax offsets
 
