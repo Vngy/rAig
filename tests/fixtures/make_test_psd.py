@@ -42,7 +42,7 @@ def build_layers():
     head = nested_layers.Group(
         name="head",
         layers=[  # top of stack first
-            shape_layer("hair_front", "ellipse", (382, 120, 642, 260), HAIR),
+            shape_layer("hair_front", "ellipse", (382, 120, 642, 240), HAIR),
             shape_layer("iris_l", "ellipse", (452, 235, 472, 255), IRIS),
             shape_layer("eye_white_l", "ellipse", (436, 229, 488, 261), WHITE),
             shape_layer("iris_r", "ellipse", (552, 235, 572, 255), IRIS),
