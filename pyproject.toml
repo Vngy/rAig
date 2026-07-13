@@ -6,7 +6,7 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
-    "numpy>=1.26",
+    "numpy>=1.26,<2.0",
     "scipy>=1.11",
     "opencv-python>=4.9",
     "psd-tools>=1.9.30",
