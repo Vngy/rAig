@@ -1,0 +1,151 @@
+{
+ "canvas_size": [
+  1024,
+  1024
+ ],
+ "layers": [
+  {
+   "name": "leg_r",
+   "slot": "leg_r",
+   "z": 0,
+   "clip_to": null,
+   "n_vertices": 26,
+   "n_triangles": 46
+  },
+  {
+   "name": "leg_l",
+   "slot": "leg_l",
+   "z": 1,
+   "clip_to": null,
+   "n_vertices": 26,
+   "n_triangles": 46
+  },
+  {
+   "name": "torso",
+   "slot": "torso",
+   "z": 2,
+   "clip_to": null,
+   "n_vertices": 112,
+   "n_triangles": 218
+  },
+  {
+   "name": "arm_r",
+   "slot": "arm_r",
+   "z": 3,
+   "clip_to": null,
+   "n_vertices": 20,
+   "n_triangles": 32
+  },
+  {
+   "name": "arm_l",
+   "slot": "arm_l",
+   "z": 4,
+   "clip_to": null,
+   "n_vertices": 20,
+   "n_triangles": 32
+  },
+  {
+   "name": "hair_back",
+   "slot": "hair_back",
+   "z": 5,
+   "clip_to": null,
+   "n_vertices": 147,
+   "n_triangles": 273
+  },
+  {
+   "name": "face",
+   "slot": "face",
+   "z": 6,
+   "clip_to": null,
+   "n_vertices": 80,
+   "n_triangles": 140
+  },
+  {
+   "name": "mouth",
+   "slot": "mouth",
+   "z": 7,
+   "clip_to": null,
+   "n_vertices": 13,
+   "n_triangles": 12
+  },
+  {
+   "name": "eye_white_r",
+   "slot": "eye_white_r",
+   "z": 8,
+   "clip_to": null,
+   "n_vertices": 12,
+   "n_triangles": 10
+  },
+  {
+   "name": "iris_r",
+   "slot": "iris_r",
+   "z": 9,
+   "clip_to": "eye_white_r",
+   "n_vertices": 12,
+   "n_triangles": 10
+  },
+  {
+   "name": "eye_white_l",
+   "slot": "eye_white_l",
+   "z": 10,
+   "clip_to": null,
+   "n_vertices": 12,
+   "n_triangles": 10
+  },
+  {
+   "name": "iris_l",
+   "slot": "iris_l",
+   "z": 11,
+   "clip_to": "eye_white_l",
+   "n_vertices": 12,
+   "n_triangles": 10
+  },
+  {
+   "name": "hair_front",
+   "slot": "hair_front",
+   "z": 12,
+   "clip_to": null,
+   "n_vertices": 64,
+   "n_triangles": 110
+  }
+ ],
+ "bones": [
+  "arm_lower_l",
+  "arm_lower_r",
+  "arm_upper_l",
+  "arm_upper_r",
+  "chest",
+  "hand_l",
+  "hand_r",
+  "head",
+  "hips",
+  "leg_lower_l",
+  "leg_lower_r",
+  "leg_upper_l",
+  "leg_upper_r",
+  "neck",
+  "spine"
+ ],
+ "deformers": [
+  [
+   "body_shift",
+   "body_angle_x"
+  ],
+  [
+   "eye_blink",
+   "eye_l_open"
+  ],
+  [
+   "eye_blink",
+   "eye_r_open"
+  ],
+  [
+   "head_warp",
+   "head_angle_x"
+  ],
+  [
+   "mouth_open",
+   "mouth_open"
+  ]
+ ]
+}
