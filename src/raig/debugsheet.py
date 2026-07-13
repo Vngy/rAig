@@ -9,7 +9,11 @@ from raig.core.rig import Rig, load_rig
 
 
 def _safe(name: str) -> str:
-    return re.sub(r"[^\w\-]+", "_", name) or "layer"
+    """ASCII-only filename sanitizer: runs of chars outside [A-Za-z0-9_-]
+    become "_"; names with nothing else left (e.g. all-Japanese) become
+    "layer"."""
+    s = re.sub(r"[^A-Za-z0-9_\-]+", "_", name)
+    return s if s.strip("_-") else "layer"
 
 
 def _overview(rig: Rig) -> np.ndarray:
@@ -48,7 +52,11 @@ def write_debug_sheet(rig: Rig, outdir: str | Path) -> list[Path]:
     written: list[Path] = []
 
     path = outdir / "00_overview.png"
-    Image.fromarray(_overview(rig)).save(path)
+    # _overview draws with cv2 BGR-convention color tuples; PIL interprets
+    # arrays as RGB, so convert here. _layer_sheet needs no conversion: its
+    # base is the RGB texture and its only overlay color (0, 255, 0) is
+    # channel-symmetric — converting it would swap the texture's R/B.
+    Image.fromarray(cv2.cvtColor(_overview(rig), cv2.COLOR_BGR2RGB)).save(path)
     written.append(path)
 
     for l in rig.layers:
