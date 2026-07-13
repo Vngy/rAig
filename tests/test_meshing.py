@@ -27,7 +27,9 @@ def tri_areas(vertices, triangles):
     a = vertices[triangles[:, 0]]
     b = vertices[triangles[:, 1]]
     c = vertices[triangles[:, 2]]
-    return 0.5 * np.abs(np.cross(b - a, c - a))
+    ab = b - a
+    ac = c - a
+    return 0.5 * np.abs(ab[:, 0] * ac[:, 1] - ab[:, 1] * ac[:, 0])
 
 
 def test_ellipse_mesh_invariants():
@@ -68,3 +70,20 @@ def test_density_scales_with_grid_step():
 def test_slot_density_table():
     assert grid_step_for_slot("hair_front") < grid_step_for_slot("misc")
     assert grid_step_for_slot("iris_l") > grid_step_for_slot("torso")
+
+
+def test_disjoint_blobs_both_meshed():
+    def draw(d):
+        d.ellipse((10, 10, 70, 70), fill=(255, 0, 0, 255))
+        # Small blob: fits between grid points at grid_step=20, so only its
+        # own contour can contribute vertices — catches largest-contour-only bugs.
+        d.ellipse((148, 148, 172, 172), fill=(255, 0, 0, 255))
+    rgba = shape_rgba((200, 200), draw)
+    mask = rgba[..., 3] > 8
+    mesh = build_mesh(rgba, grid_step=20)
+    centroids = mesh.vertices[mesh.triangles].mean(axis=1)
+    in_first = (centroids[:, 0] < 100) & (centroids[:, 1] < 100)
+    in_second = (centroids[:, 0] >= 100) & (centroids[:, 1] >= 100)
+    assert in_first.any(), "no triangles cover the first blob"
+    assert in_second.any(), "no triangles cover the second blob"
+    assert tri_areas(mesh.vertices, mesh.triangles).sum() >= 0.75 * mask.sum()

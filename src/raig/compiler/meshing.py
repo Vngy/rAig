@@ -8,6 +8,7 @@ from raig.compiler.errors import CompileError
 
 _ALPHA_THRESHOLD = 8
 _MIN_TRIANGLE_AREA = 0.5  # px^2
+_MIN_CONTOUR_AREA = 2.0  # px^2 — skip single-pixel noise specks
 
 _SLOT_GRID_STEP: dict[str, int] = {
     "hair_front": 24, "hair_back": 24, "torso": 24, "face": 28,
@@ -34,16 +35,20 @@ def build_mesh(rgba: np.ndarray, grid_step: int = _DEFAULT_GRID_STEP) -> MeshRes
     h, w = mask.shape
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contour = max(contours, key=cv2.contourArea)
-    perimeter = cv2.arcLength(contour, True)
-    boundary = cv2.approxPolyDP(contour, 0.01 * perimeter, True).reshape(-1, 2)
+    boundaries = []
+    for contour in contours:
+        if cv2.contourArea(contour) < _MIN_CONTOUR_AREA:
+            continue
+        perimeter = cv2.arcLength(contour, True)
+        simplified = cv2.approxPolyDP(contour, 0.01 * perimeter, True).reshape(-1, 2)
+        boundaries.append(simplified.astype(np.float64))
 
     gx = np.arange(grid_step / 2.0, w, grid_step)
     gy = np.arange(grid_step / 2.0, h, grid_step)
     xx, yy = np.meshgrid(gx, gy)
     grid = np.stack([xx.ravel(), yy.ravel()], axis=1)
     inside = mask[grid[:, 1].astype(int), grid[:, 0].astype(int)] > 0
-    points = np.vstack([boundary.astype(np.float64), grid[inside]])
+    points = np.vstack(boundaries + [grid[inside]])
     points = np.unique(np.round(points, 3), axis=0)
     if points.shape[0] < 3:
         raise CompileError("too few points to triangulate layer")
@@ -52,7 +57,9 @@ def build_mesh(rgba: np.ndarray, grid_step: int = _DEFAULT_GRID_STEP) -> MeshRes
     a = points[tri.simplices[:, 0]]
     b = points[tri.simplices[:, 1]]
     c = points[tri.simplices[:, 2]]
-    areas = 0.5 * np.abs(np.cross(b - a, c - a))
+    ab = b - a
+    ac = c - a
+    areas = 0.5 * np.abs(ab[:, 0] * ac[:, 1] - ab[:, 1] * ac[:, 0])
     centroids = (a + b + c) / 3.0
     ix = np.clip(np.round(centroids[:, 0]).astype(int), 0, w - 1)
     iy = np.clip(np.round(centroids[:, 1]).astype(int), 0, h - 1)
