@@ -101,6 +101,9 @@ class RigRenderer:
         fbo.use()
         fbo.clear(*background)
         mask_fbo = self._mask_fbo_for(fbo)
+        # Keep unit 1 bound even for unmasked layers: a sampler uniform
+        # pointing at an unbound unit is undefined on some GL drivers.
+        self._mask_tex.use(1)
 
         for gpu in self.layers.values():
             layer = gpu.layer
