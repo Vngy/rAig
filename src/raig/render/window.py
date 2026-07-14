@@ -1,3 +1,4 @@
+import sys
 import time
 
 import moderngl_window as mglw
@@ -138,8 +139,14 @@ def run_command(args) -> int:
     PreviewWindow.rig = rig
     PreviewWindow.source = source
     PreviewWindow.rig_path = args.rig
+    # moderngl_window.parse_args does `args or sys.argv[1:]`, so passing the
+    # empty list we intend ("no extra window-config args") is falsy and
+    # silently falls back to re-parsing raig's own CLI argv as its args —
+    # truncate sys.argv so that fallback is also empty.
+    saved_argv, sys.argv = sys.argv, sys.argv[:1]
     try:
         mglw.run_window_config(PreviewWindow, args=[])
     finally:
+        sys.argv = saved_argv
         source.stop()
     return 0
