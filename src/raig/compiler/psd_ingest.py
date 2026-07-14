@@ -50,11 +50,28 @@ def _uniquify_names(names: list[str]) -> list[str]:
     return out
 
 
+def _effectively_visible(layer, psd) -> bool:
+    # A layer is part of the artist's default look only if it AND every
+    # ancestor group is visible. Standing-picture PSDs ship every expression
+    # variant as a hidden layer; compositing those yields transparent pixels,
+    # so they must be skipped rather than meshed.
+    node = layer
+    while node is not None and node is not psd:
+        if not node.visible:
+            return False
+        node = node.parent
+    return True
+
+
 def load_layers(psd_path: str | Path) -> tuple[list[LayerRecord], tuple[int, int]]:
     psd = PSDImage.open(psd_path)
     pixel_layers = []
+    hidden = 0
     for layer in psd.descendants():
         if layer.is_group():
+            continue
+        if not _effectively_visible(layer, psd):
+            hidden += 1
             continue
         if layer.kind not in _PIXEL_KINDS:
             print(
@@ -64,6 +81,12 @@ def load_layers(psd_path: str | Path) -> tuple[list[LayerRecord], tuple[int, int
             )
             continue
         pixel_layers.append(layer)
+    if hidden:
+        print(
+            f"notice: skipped {hidden} hidden layer(s) (not part of the "
+            f"PSD's default look)",
+            file=sys.stderr,
+        )
     # psd-tools yields file storage order: bottom-most layer first, which is
     # exactly ascending draw order. (Pinned by test_z_order_is_draw_order —
     # if that test fails with inverted comparisons, reverse pixel_layers.)

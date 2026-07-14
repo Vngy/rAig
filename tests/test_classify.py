@@ -109,3 +109,7 @@ def test_all_emitted_slots_are_canonical():
     ]
     for c in classify_layers(records, CANVAS):
         assert c.slot in SLOTS
+
+
+def test_hiragana_brow_keyword():
+    assert classify_one(make_record("まゆ", center=(400, 200))).slot == "brow_l"

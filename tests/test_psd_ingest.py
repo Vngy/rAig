@@ -116,11 +116,13 @@ class _FakeLayer:
     pytoshop is impractical (pytoshop's nested_layers only builds group and
     raster/Image layers)."""
 
-    def __init__(self, name, kind, rgba=None, parent=None, offset=(0, 0)):
+    def __init__(self, name, kind, rgba=None, parent=None, offset=(0, 0),
+                 visible=True):
         self.name = name
         self.kind = kind
         self.parent = parent
         self.left, self.top = offset
+        self.visible = visible
         self._rgba = rgba
 
     def is_group(self):
@@ -158,3 +160,30 @@ def test_non_pixel_layers_skipped_with_stderr_warning(monkeypatch, capsys):
     err = capsys.readouterr().err
     assert "Levels 1" in err
     assert "Title" in err
+
+
+def test_hidden_layers_are_skipped(tmp_path, capsys):
+    # Standing-picture PSDs ship expression variants as hidden layers; only
+    # the artist's default look should be meshed.
+    shown = _rect_layer("body", (4, 4, 40, 40), (10, 20, 30, 255))
+    hidden = _rect_layer("angry_variant", (8, 8, 30, 30), (255, 0, 0, 255))
+    hidden.visible = False
+    path = tmp_path / "vis.psd"
+    _write_psd([shown, hidden], path)
+
+    records, _ = load_layers(path)
+    assert [r.name for r in records] == ["body"]
+    assert "skipped 1 hidden layer" in capsys.readouterr().err
+
+
+def test_layer_in_hidden_group_is_skipped(tmp_path, capsys):
+    child = _rect_layer("mouth_variant", (8, 8, 30, 30), (255, 0, 0, 255))
+    group = nested_layers.Group(name="variants", layers=[child], closed=True)
+    group.visible = False
+    body = _rect_layer("body", (4, 4, 40, 40), (10, 20, 30, 255))
+    path = tmp_path / "grp.psd"
+    _write_psd([group, body], path)
+
+    records, _ = load_layers(path)
+    assert [r.name for r in records] == ["body"]
+    assert "skipped 1 hidden layer" in capsys.readouterr().err

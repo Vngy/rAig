@@ -24,7 +24,7 @@ _BASE_RULES: list[tuple[str, list[str]]] = [
     # and "eyebrow" contains "eye" as a substring — first-hit-wins ordering
     # would otherwise misclassify brows as eye whites. No eye_white keyword
     # contains "brow"/眉, so the reorder can't steal eye-intended names.
-    ("brow", ["brow", "眉"]),
+    ("brow", ["brow", "眉", "まゆ"]),
     ("eye_white", ["eye_white", "eyewhite", "sclera", "白目", "eye", "目"]),
     ("mouth", ["mouth", "lips", "口"]),
     ("face", ["face", "顔"]),
