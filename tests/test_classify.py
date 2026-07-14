@@ -75,6 +75,18 @@ def test_override_unknown_slot_rejected(tmp_path):
         load_overrides(ov)
 
 
+def test_name_variants_match_underscore_keyword():
+    c = classify_one(make_record("hair front"))
+    assert c.slot == "hair_front" and c.source == "name"
+    assert classify_one(make_record("hair-front")).slot == "hair_front"
+    assert classify_one(make_record("hair_front")).slot == "hair_front"
+
+
+def test_bare_eye_keyword_matches_eye_white_with_side():
+    assert classify_one(make_record("eye_L")).slot == "eye_white_l"
+    assert classify_one(make_record("左目")).slot == "eye_white_l"
+
+
 def test_all_emitted_slots_are_canonical():
     records = [
         make_record("前髪"), make_record("iris", center=(300, 245)),

@@ -20,7 +20,7 @@ _BASE_RULES: list[tuple[str, list[str]]] = [
     ("hair_front", ["hair_front", "fronthair", "bangs", "fringe", "前髪"]),
     ("hair_back", ["hair_back", "backhair", "後ろ髪", "後髪"]),
     ("iris", ["iris", "pupil", "瞳", "目玉"]),
-    ("eye_white", ["eye_white", "eyewhite", "sclera", "白目"]),
+    ("eye_white", ["eye_white", "eyewhite", "sclera", "白目", "eye", "目"]),
     ("brow", ["brow", "眉"]),
     ("mouth", ["mouth", "lips", "口"]),
     ("face", ["face", "顔"]),
@@ -44,13 +44,17 @@ class Classified:
 
 
 def _normalize(name: str) -> str:
-    return re.sub(r"[\s\-]+", "", name.lower())
+    # Whitespace, hyphens, and underscores are all just word separators in
+    # artist layer-naming conventions ("hair front" / "hair-front" /
+    # "hair_front" should all match the same keyword) — strip them all so
+    # comparisons are separator-agnostic.
+    return re.sub(r"[\s\-_]+", "", name.lower())
 
 
 def _match_base(name: str) -> str | None:
     norm = _normalize(name)
     for base, keywords in _BASE_RULES:
-        if any(k in norm for k in keywords):
+        if any(_normalize(k) in norm for k in keywords):
             return base
     return None
 

@@ -60,6 +60,19 @@ def test_transparent_layer_raises():
         build_mesh(rgba)
 
 
+def test_collinear_sliver_raises_compile_error_not_qhullerror():
+    # A 1px-wide vertical sliver: with grid_step=1 every sampled interior
+    # point shares the same x coordinate, so scipy's Qhull backend can't
+    # build an initial simplex and raises QhullError. build_mesh must
+    # translate that into a CompileError (compile.py's per-layer
+    # warn-and-skip loop only catches CompileError), not let the raw
+    # QhullError crash the compile.
+    rgba = np.zeros((50, 1, 4), dtype=np.uint8)
+    rgba[:, 0, 3] = 255
+    with pytest.raises(CompileError):
+        build_mesh(rgba, grid_step=1)
+
+
 def test_density_scales_with_grid_step():
     rgba = ellipse_rgba(300, 300)
     dense = build_mesh(rgba, grid_step=16)

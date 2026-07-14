@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import cv2
 import numpy as np
-from scipy.spatial import Delaunay
+from scipy.spatial import Delaunay, QhullError
 
 from raig.compiler.errors import CompileError
 
@@ -53,7 +53,14 @@ def build_mesh(rgba: np.ndarray, grid_step: int = _DEFAULT_GRID_STEP) -> MeshRes
     if points.shape[0] < 3:
         raise CompileError("too few points to triangulate layer")
 
-    tri = Delaunay(points)
+    try:
+        tri = Delaunay(points)
+    except QhullError as e:
+        # Degenerate point sets (e.g. a hairline sliver whose sample points
+        # are all collinear) leave Qhull unable to build an initial simplex.
+        # Surface it as a CompileError so compile.py's per-layer warn-and-skip
+        # loop handles it instead of the raw Qhull crash propagating.
+        raise CompileError(f"degenerate mesh for layer: {e}") from e
     a = points[tri.simplices[:, 0]]
     b = points[tri.simplices[:, 1]]
     c = points[tri.simplices[:, 2]]
