@@ -1,5 +1,3 @@
-import numpy as np
-
 from raig.tracking.bundle import LandmarkBundle
 from raig.tracking.mapper import Mapper
 from raig.render.window import ReplaySource

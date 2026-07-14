@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from raig.tracking.landmarks import bundle_from_results
 from raig.tracking.models import ensure_models, models_dir
@@ -68,9 +69,6 @@ def test_bundle_from_results_all_missing():
     b = bundle_from_results(0.0, empty_face, empty_pose, empty_hand)
     assert b.face_blendshapes is None and b.pose is None
     assert b.hand_l is None and b.hand_r is None
-
-
-import pytest
 
 
 @pytest.mark.integration

@@ -21,7 +21,7 @@ def test_writes_overview_and_per_layer_pngs(mini_rig, tmp_path):
     assert len(written) == 1 + len(mini_rig.layers)  # overview + 13 layers
     for p in written:
         assert p.exists() and p.stat().st_size > 0
-    assert (tmp_path / "00_overview.png").exists()
+    assert (tmp_path / "000_overview.png").exists()
 
 
 def test_overlay_colors_survive_to_disk(mini_rig, tmp_path):
@@ -44,6 +44,15 @@ def test_japanese_layer_name_gets_ascii_filename(mini_rig, tmp_path):
     layer_png = written[1]
     assert layer_png.name.isascii()
     assert layer_png.exists()
+
+
+def test_overview_sorts_first_in_directory_listing(mini_rig, tmp_path):
+    # Guards the 3-digit z_index width (real models exceed 99 layers): the
+    # overview's own numeric prefix must still lexicographically precede
+    # every per-layer file, regardless of layer count or layer names.
+    write_debug_sheet(mini_rig, tmp_path)
+    names = sorted(p.name for p in tmp_path.glob("*.png"))
+    assert names[0] == "000_overview.png"
 
 
 def test_cli_debug_command(mini_rig, tmp_path):

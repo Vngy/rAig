@@ -40,7 +40,11 @@ def _bone_world(rig: Rig, frame: ParamFrame) -> np.ndarray:
 def _skin(layer, world: np.ndarray) -> np.ndarray:
     v = layer.vertices.astype(np.float64)
     homo = np.concatenate([v, np.ones((v.shape[0], 1))], axis=1)  # (N,3)
-    idx = np.clip(layer.bone_indices, 0, None)  # safe gather; weight 0 where -1
+    # Clamps only the lower bound: -1 (unbound-vertex sentinel) becomes 0,
+    # which is always a valid index (weight 0 there makes it a no-op via
+    # the weighted sum below). Out-of-range *positive* indices are not
+    # guarded here and would still raise IndexError.
+    idx = np.clip(layer.bone_indices, 0, None)
     mats = world[idx]  # (N,2,2,3)
     skinned = np.einsum("nkij,nj->nki", mats, homo)  # (N,2,2)
     w = layer.bone_weights.astype(np.float64)[..., None]

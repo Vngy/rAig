@@ -51,7 +51,7 @@ def write_debug_sheet(rig: Rig, outdir: str | Path) -> list[Path]:
     outdir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
 
-    path = outdir / "00_overview.png"
+    path = outdir / "000_overview.png"
     # _overview draws with cv2 BGR-convention color tuples; PIL interprets
     # arrays as RGB, so convert here. _layer_sheet needs no conversion: its
     # base is the RGB texture and its only overlay color (0, 255, 0) is
@@ -60,7 +60,12 @@ def write_debug_sheet(rig: Rig, outdir: str | Path) -> list[Path]:
     written.append(path)
 
     for l in rig.layers:
-        path = outdir / f"{l.z_index:02d}_{_safe(l.layer_name)}.png"
+        # 3-digit width: real models exceed 99 layers. Offset by +1 so the
+        # filename numbering starts at 001, reserving 000 for the overview —
+        # otherwise a 2-vs-3-digit prefix mismatch (or an alphabetically
+        # early layer name tying at "00_") can sort a layer file ahead of
+        # 00_overview.png in a directory listing.
+        path = outdir / f"{l.z_index + 1:03d}_{_safe(l.layer_name)}.png"
         Image.fromarray(_layer_sheet(l)).save(path)
         written.append(path)
     return written

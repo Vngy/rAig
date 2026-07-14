@@ -3,7 +3,6 @@ import time
 import numpy as np
 import pytest
 
-from raig.core.params import rest_frame
 from raig.render.renderer import RigRenderer
 from raig.tracking.mapper import Mapper
 from raig.tracking.synth import make_session
