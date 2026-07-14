@@ -80,14 +80,18 @@ class Mapper:
                 out["body_angle_x"] = lean * 60.0
         return out
 
-    def _hand_params(self, b: LandmarkBundle) -> dict[str, float]:
+    def _hand_params(self, b: LandmarkBundle,
+                     fresh: dict[str, float]) -> dict[str, float]:
         out: dict[str, float] = {}
         for side, hand in (("l", b.hand_r), ("r", b.hand_l)):  # mirrored
             if hand is None:
                 continue
             wrist, middle_mcp = np.asarray(hand)[0, :2], np.asarray(hand)[9, :2]
-            arm_lower = self._last.get(f"arm_lower_{side}_rot", 0.0)
-            arm_upper = self._last.get(f"arm_upper_{side}_rot", 0.0)
+            # current frame's arm angles; fall back to last frame if arm absent
+            lower_key = f"arm_lower_{side}_rot"
+            upper_key = f"arm_upper_{side}_rot"
+            arm_lower = fresh.get(lower_key, self._last.get(lower_key, 0.0))
+            arm_upper = fresh.get(upper_key, self._last.get(upper_key, 0.0))
             out[f"hand_{side}_rot"] = (
                 angle_from_down(middle_mcp - wrist) - arm_lower - arm_upper
             )
@@ -99,10 +103,10 @@ class Mapper:
         fresh: dict[str, float] = {}
         fresh.update(self._face_params(b))
         fresh.update(self._body_params(b))
-        fresh.update(self._hand_params(b))
+        fresh.update(self._hand_params(b, fresh))
 
         dt = 0.0 if self._last_t is None else max(b.timestamp - self._last_t, 0.0)
-        decay = math.exp(-dt / _DECAY_TAU) if dt > 0 else 0.0
+        decay = math.exp(-dt / _DECAY_TAU)  # dt == 0 -> 1.0: retain, never snap
         values = dict(fresh)
         for name, prev in self._last.items():
             if name not in values:  # source lost: decay toward default
