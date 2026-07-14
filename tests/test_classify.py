@@ -75,6 +75,14 @@ def test_override_unknown_slot_rejected(tmp_path):
         load_overrides(ov)
 
 
+def test_override_exclude_accepted(tmp_path):
+    ov = tmp_path / "overrides.toml"
+    ov.write_text('[slots]\nsparkle = "exclude"\n')
+    overrides = load_overrides(ov)
+    c = classify_one(make_record("sparkle"), overrides)
+    assert c.slot == "exclude" and c.source == "override"
+
+
 def test_name_variants_match_underscore_keyword():
     c = classify_one(make_record("hair front"))
     assert c.slot == "hair_front" and c.source == "name"

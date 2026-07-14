@@ -137,9 +137,12 @@ def load_overrides(path: str | Path) -> dict[str, str]:
         data = tomllib.load(f)
     slots = data.get("slots", {})
     for layer_name, slot in slots.items():
-        if slot not in SLOTS:
+        # "exclude" is a special pseudo-slot: the compiler drops the layer
+        # entirely (real PSDs ship always-visible expression variants that
+        # must not render in the rig).
+        if slot not in SLOTS and slot != "exclude":
             raise ValueError(
                 f"overrides: layer {layer_name!r} maps to unknown slot {slot!r}; "
-                f"valid slots: {sorted(SLOTS)}"
+                f"valid slots: {sorted(SLOTS)} or 'exclude'"
             )
     return dict(slots)

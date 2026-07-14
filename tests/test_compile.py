@@ -55,6 +55,21 @@ def test_compile_without_torso_fails_loudly():
         compile_from_records(records, (1024, 1024))
 
 
+def test_override_exclude_drops_layer(capsys):
+    records = [
+        solid_record("face", ("head",), 0, (392, 130), (240, 260)),
+        solid_record("torso", ("body",), 1, (362, 390), (300, 400)),
+        solid_record("sparkle_effect", ("head",), 2, (392, 130), (240, 260)),
+    ]
+    rig = compile_from_records(
+        records, (1024, 1024), overrides={"sparkle_effect": "exclude"}
+    )
+    names = {l.layer_name for l in rig.layers}
+    assert "sparkle_effect" not in names
+    assert {"face", "torso"} <= names
+    assert "excluding layer 'sparkle_effect'" in capsys.readouterr().err
+
+
 def test_empty_layer_skipped_with_warning(capsys):
     records = [
         solid_record("face", ("head",), 0, (392, 130), (240, 260)),

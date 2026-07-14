@@ -39,6 +39,7 @@ Create `overrides.toml` and pin layers to slots, then recompile:
 ```toml
 [slots]
 "mystery_layer_7" = "hair_front"
+"heart_eyes_variant" = "exclude"
 ```
 
 ```bash
@@ -47,6 +48,10 @@ uv run raig compile model.psd --overrides overrides.toml
 
 Valid slots: hair_front, hair_back, face, eye_white_l/r, iris_l/r, brow_l/r,
 mouth, head_misc, torso, arm_l/r, leg_l/r, misc.
+
+The special value `exclude` drops a layer from the rig entirely — real PSDs
+often ship always-visible expression variants (heart eyes, blush, alternate
+mouths) that shouldn't render.
 
 ## Development
 

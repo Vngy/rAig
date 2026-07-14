@@ -19,6 +19,17 @@ def compile_from_records(
 ) -> Rig:
     classified = classify_layers(records, canvas_size, overrides)
 
+    kept = []
+    for c in classified:
+        if c.slot == "exclude":
+            print(
+                f"notice: excluding layer {c.record.name!r} (overrides)",
+                file=sys.stderr,
+            )
+            continue
+        kept.append(c)
+    classified = kept
+
     meshed = []  # (Classified, MeshResult)
     for c in classified:
         try:
