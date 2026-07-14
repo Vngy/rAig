@@ -87,6 +87,13 @@ def test_bare_eye_keyword_matches_eye_white_with_side():
     assert classify_one(make_record("左目")).slot == "eye_white_l"
 
 
+def test_eyebrow_matches_brow_not_eye_white():
+    # "eyebrow" contains "eye" as a substring; the brow rule must win
+    # (it precedes eye_white in _BASE_RULES priority order).
+    c = classify_one(make_record("eyebrow_L"))
+    assert c.slot == "brow_l" and c.source == "name"
+
+
 def test_all_emitted_slots_are_canonical():
     records = [
         make_record("前髪"), make_record("iris", center=(300, 245)),

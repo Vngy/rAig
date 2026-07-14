@@ -20,8 +20,12 @@ _BASE_RULES: list[tuple[str, list[str]]] = [
     ("hair_front", ["hair_front", "fronthair", "bangs", "fringe", "前髪"]),
     ("hair_back", ["hair_back", "backhair", "後ろ髪", "後髪"]),
     ("iris", ["iris", "pupil", "瞳", "目玉"]),
-    ("eye_white", ["eye_white", "eyewhite", "sclera", "白目", "eye", "目"]),
+    # brow must precede eye_white: eye_white carries the bare "eye" keyword,
+    # and "eyebrow" contains "eye" as a substring — first-hit-wins ordering
+    # would otherwise misclassify brows as eye whites. No eye_white keyword
+    # contains "brow"/眉, so the reorder can't steal eye-intended names.
     ("brow", ["brow", "眉"]),
+    ("eye_white", ["eye_white", "eyewhite", "sclera", "白目", "eye", "目"]),
     ("mouth", ["mouth", "lips", "口"]),
     ("face", ["face", "顔"]),
     ("hand", ["hand", "手"]),
