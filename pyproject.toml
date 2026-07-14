@@ -38,4 +38,4 @@ markers = [
     "integration: needs webcam and/or downloaded MediaPipe models",
     "perf: timing-sensitive performance checks",
 ]
-addopts = "-m 'not integration'"
+addopts = "-m 'not integration and not perf'"
