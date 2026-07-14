@@ -1,3 +1,5 @@
+import math
+
 from raig.core.params import (
     PARAM_SPECS,
     bone_rot_param,
@@ -30,6 +32,14 @@ def test_bone_rot_params_accepted_and_clamped():
 def test_unknown_params_dropped_silently():
     f = make_param_frame({"totally_bogus": 1.0, "mouth_open": 0.5})
     assert "totally_bogus" not in f.values
+    assert f.values["mouth_open"] == 0.5
+
+
+def test_nan_dropped_like_unknown_param():
+    name = bone_rot_param("arm_upper_l")
+    f = make_param_frame({"head_angle_x": math.nan, name: math.nan, "mouth_open": 0.5})
+    assert "head_angle_x" not in f.values
+    assert name not in f.values
     assert f.values["mouth_open"] == 0.5
 
 

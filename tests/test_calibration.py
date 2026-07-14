@@ -51,3 +51,9 @@ def test_load_missing_offsets_key_returns_none(tmp_path):
     rig_path = tmp_path / "model.raig"
     sidecar_path(rig_path).write_text('{"wrong_key": {}}')
     assert load_calibration(rig_path) is None
+
+
+def test_load_non_dict_offsets_returns_none(tmp_path):
+    rig_path = tmp_path / "model.raig"
+    sidecar_path(rig_path).write_text('{"offsets": "abc"}')
+    assert load_calibration(rig_path) is None

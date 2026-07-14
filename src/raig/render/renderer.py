@@ -113,6 +113,17 @@ class RigRenderer:
                 mask_fbo.clear(0.0, 0.0, 0.0, 0.0)
                 self.ctx.disable(moderngl.BLEND)
                 self.program["mode"].value = 2
+                # NOTE: mask_tex stays bound on texture unit 1 (see the
+                # `self._mask_tex.use(1)` above) while it is also attached
+                # as mask_fbo's color target here — i.e. it's simultaneously
+                # bound-as-input and bound-as-render-target. This is inert
+                # today because the mode==2 shader path never samples
+                # mask_tex, only mode==1 does. Stricter drivers (ANGLE, Mesa
+                # with debug validation) may still reject this as a
+                # read/write (feedback loop) hazard even though nothing
+                # actually reads it in this pass. The clean fix would be a
+                # separate program/FBO pair for the mask pass so mask_tex is
+                # never bound as a sampler while it's a render target.
                 mask_gpu.texture.use(0)
                 mask_gpu.vao.render()
                 self.ctx.enable(moderngl.BLEND)

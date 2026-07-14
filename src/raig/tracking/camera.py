@@ -1,3 +1,4 @@
+import sys
 import threading
 import time
 
@@ -44,6 +45,12 @@ class TrackerThread(threading.Thread):
             except Exception:  # lenient runtime: never crash the loop
                 ok, frame_rgb = False, None
             if not ok:
+                if self.status != "no_camera":
+                    # Log once on the transition, not per-iteration: this
+                    # loop polls at 10 Hz and a disconnected camera would
+                    # otherwise spam stderr for as long as it stays down.
+                    print("camera read failed: no frame (camera disconnected?)",
+                          file=sys.stderr)
                 self.status = "no_camera"
                 self._stop_event.wait(0.1)
                 continue

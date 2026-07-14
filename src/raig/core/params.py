@@ -1,3 +1,4 @@
+import math
 import time
 from dataclasses import dataclass
 
@@ -44,6 +45,11 @@ def make_param_frame(
 ) -> ParamFrame:
     values: dict[str, float] = {}
     for name, v in raw.items():
+        if math.isnan(v):
+            # NaN passes min/max clamping unchanged and would otherwise
+            # poison Mapper._last / OneEuroFilter state forever. Treat it
+            # like an unknown param: omit it so decay/default takes over.
+            continue
         spec = PARAM_SPECS.get(name)
         if spec is not None:
             values[name] = float(min(max(v, spec.min), spec.max))

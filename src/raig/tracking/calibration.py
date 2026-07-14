@@ -45,6 +45,10 @@ def load_calibration(rig_path: str | Path) -> Calibration | None:
     if not p.exists():
         return None
     try:
-        return Calibration(offsets=json.loads(p.read_text())["offsets"])
+        data = json.loads(p.read_text())
+        offsets = data["offsets"]
+        if not isinstance(offsets, dict):
+            return None
+        return Calibration(offsets=offsets)
     except (OSError, json.JSONDecodeError, KeyError, TypeError):
         return None  # corrupt/unreadable sidecar degrades to uncalibrated

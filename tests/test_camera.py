@@ -69,12 +69,17 @@ def test_tracker_thread_reports_camera_loss():
     assert t.status == "stopped"
 
 
-def test_tracker_thread_survives_read_exception():
+def test_tracker_thread_survives_read_exception(capfd):
     t = TrackerThread(RaisingCamera(), FakeExtractor(), Mapper(smooth=False))
     t.start()
     assert wait_for(lambda: t.status == "no_camera")
     assert t.is_alive()
     assert t.latest() is None
+    # Let a few more 0.1s poll cycles elapse while still down: the
+    # ok->no_camera transition log must fire once, not once per iteration.
+    time.sleep(0.35)
     t.stop()
     assert not t.is_alive()
     assert t.status == "stopped"
+    err = capfd.readouterr().err
+    assert err.count("camera read failed") == 1
