@@ -39,3 +39,15 @@ def test_sidecar_round_trip(tmp_path):
 
 def test_load_missing_returns_none(tmp_path):
     assert load_calibration(tmp_path / "nope.raig") is None
+
+
+def test_load_corrupt_json_returns_none(tmp_path):
+    rig_path = tmp_path / "model.raig"
+    sidecar_path(rig_path).write_text("{not json")
+    assert load_calibration(rig_path) is None
+
+
+def test_load_missing_offsets_key_returns_none(tmp_path):
+    rig_path = tmp_path / "model.raig"
+    sidecar_path(rig_path).write_text('{"wrong_key": {}}')
+    assert load_calibration(rig_path) is None
