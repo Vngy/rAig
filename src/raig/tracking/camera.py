@@ -39,10 +39,13 @@ class TrackerThread(threading.Thread):
     def run(self) -> None:
         t0 = time.monotonic()
         while not self._stop_event.is_set():
-            ok, frame_rgb, _ = self._camera.read()
+            try:
+                ok, frame_rgb, _ = self._camera.read()
+            except Exception:  # lenient runtime: never crash the loop
+                ok, frame_rgb = False, None
             if not ok:
                 self.status = "no_camera"
-                time.sleep(0.1)
+                self._stop_event.wait(0.1)
                 continue
             timestamp_ms = int((time.monotonic() - t0) * 1000)
             try:
@@ -59,3 +62,5 @@ class TrackerThread(threading.Thread):
 
     def stop(self) -> None:
         self._stop_event.set()
+        if self.is_alive():
+            self.join(timeout=2.0)

@@ -22,6 +22,14 @@ class FakeCamera:
         pass
 
 
+class RaisingCamera:
+    def read(self):
+        raise RuntimeError("device disconnected")
+
+    def release(self):
+        pass
+
+
 class FakeExtractor:
     def extract(self, frame_rgb, timestamp_ms):
         return LandmarkBundle(
@@ -47,7 +55,8 @@ def test_tracker_thread_produces_frames():
     assert abs(frame.values["mouth_open"] - 0.5) < 1e-6
     assert t.status == "ok"
     t.stop()
-    assert wait_for(lambda: t.status == "stopped")
+    assert not t.is_alive()
+    assert t.status == "stopped"
 
 
 def test_tracker_thread_reports_camera_loss():
@@ -56,3 +65,16 @@ def test_tracker_thread_reports_camera_loss():
     assert wait_for(lambda: t.status == "no_camera")
     assert t.latest() is None
     t.stop()
+    assert not t.is_alive()
+    assert t.status == "stopped"
+
+
+def test_tracker_thread_survives_read_exception():
+    t = TrackerThread(RaisingCamera(), FakeExtractor(), Mapper(smooth=False))
+    t.start()
+    assert wait_for(lambda: t.status == "no_camera")
+    assert t.is_alive()
+    assert t.latest() is None
+    t.stop()
+    assert not t.is_alive()
+    assert t.status == "stopped"
