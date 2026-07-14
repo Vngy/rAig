@@ -178,6 +178,25 @@ Face parts use procedural parameter deformers instead of bones (Live2D-style):
   headless (offscreen rendering) to catch regressions without webcam or human.
 - **Acceptance (manual):** the one target model, live, looking right.
 
+## MVP simplifications (recorded post-review, 2026-07-14)
+
+The final whole-branch review found these divergences between spec text and
+the shipped implementation. All are deliberate MVP simplifications — recorded
+here so future contributors don't "fix" the code toward stale spec text (or
+vice versa) without a decision:
+
+1. **Geometry fallback (§1a)** is a single vertical-position threshold rule,
+   not the promised size/z-order/overlap heuristics. `overrides.toml` is the
+   working escape hatch.
+2. **Skin weights (§1c)** are inverse-square distance only; the "then
+   smoothed" pass was not implemented.
+3. **Clipping (Component 3)** is wired only for iris→eye_white; the mouth
+   renders unclipped.
+4. **Webcam-disconnect warning (Error handling)** appears in the window
+   title (`[no_camera]`), not as an on-screen overlay.
+5. **Calibration (Component 2)** is not auto-collected on first startup; the
+   user presses `C` once, after which the sidecar persists it.
+
 ## Out of scope for MVP (future milestones)
 
 1. **Flat-image input:** AI segmentation + occlusion inpainting to cut an
