@@ -35,3 +35,21 @@ def test_debug_args():
     args = build_parser().parse_args(["debug", "model.raig"])
     assert args.command == "debug"
     assert args.outdir == "debug_sheet"
+
+
+def test_debug_missing_rig_exits_cleanly(tmp_path, capsys):
+    from raig.cli import main
+
+    rc = main(["debug", str(tmp_path / "nope.raig")])
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert "debug failed" in err and "nope.raig" in err
+
+
+def test_run_missing_rig_exits_cleanly(tmp_path, capsys):
+    from raig.cli import main
+
+    rc = main(["run", str(tmp_path / "nope.raig")])
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert "run failed" in err and "nope.raig" in err

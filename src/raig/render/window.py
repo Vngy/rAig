@@ -123,9 +123,21 @@ class PreviewWindow(mglw.WindowConfig):
 
 
 def run_command(args) -> int:
-    rig = load_rig(args.rig)
+    try:
+        rig = load_rig(args.rig)
+    except Exception as e:  # missing/corrupt .raig: clean exit, not a traceback
+        print(f"run failed: cannot load rig {args.rig!r}: {e}", file=sys.stderr)
+        return 1
     if args.replay:
-        source = ReplaySource(load_replay(args.replay), Mapper())
+        try:
+            bundles = load_replay(args.replay)
+        except Exception as e:  # missing/corrupt replay JSONL
+            print(
+                f"run failed: cannot load replay {args.replay!r}: {e}",
+                file=sys.stderr,
+            )
+            return 1
+        source = ReplaySource(bundles, Mapper())
     else:
         from raig.tracking.camera import Camera, TrackerThread
         from raig.tracking.landmarks import LandmarkExtractor

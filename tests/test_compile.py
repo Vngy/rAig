@@ -55,6 +55,21 @@ def test_compile_without_torso_fails_loudly():
         compile_from_records(records, (1024, 1024))
 
 
+def test_iris_clips_to_largest_eye_white():
+    # lashes/eyeliner also classify to eye_white_*; the iris must clip to the
+    # sclera (largest opaque footprint), not whichever comes first in z-order
+    records = [
+        solid_record("face", ("head",), 0, (392, 130), (240, 260)),
+        solid_record("torso", ("body",), 1, (362, 390), (300, 400)),
+        solid_record("eyeliner_L", ("head",), 2, (430, 200), (40, 6)),   # sliver, first
+        solid_record("eye_white_L", ("head",), 3, (425, 195), (60, 40)),  # sclera
+        solid_record("iris_L", ("head",), 4, (440, 205), (24, 24)),
+    ]
+    rig = compile_from_records(records, (1024, 1024))
+    by_name = {l.layer_name: l for l in rig.layers}
+    assert by_name["iris_L"].clip_to == "eye_white_L"
+
+
 def test_override_exclude_drops_layer(capsys):
     records = [
         solid_record("face", ("head",), 0, (392, 130), (240, 260)),

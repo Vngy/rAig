@@ -56,12 +56,18 @@ def compile_from_records(
     bones = fit_skeleton(slot_bboxes, canvas_size)  # raises CompileError if critical parts missing
 
     layer_slots = {c.record.name: c.slot for c, _ in meshed}
-    eye_whites = {
-        side: next(
-            (c.record.name for c, _ in meshed if c.slot == f"eye_white_{side}"), None
-        )
-        for side in ("l", "r")
-    }
+
+    def _clip_target(side: str) -> str | None:
+        # Several layers can classify to eye_white_* (lashes, eyeliner, the
+        # actual sclera). The iris must clip to the sclera, which is reliably
+        # the one with the largest opaque footprint — not the first in z.
+        candidates = [c for c, _ in meshed if c.slot == f"eye_white_{side}"]
+        if not candidates:
+            return None
+        best = max(candidates, key=lambda c: int((c.record.rgba[..., 3] > 8).sum()))
+        return best.record.name
+
+    eye_whites = {side: _clip_target(side) for side in ("l", "r")}
 
     layers: list[LayerMesh] = []
     for c, mesh in meshed:

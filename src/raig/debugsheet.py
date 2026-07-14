@@ -1,4 +1,5 @@
 import re
+import sys
 from pathlib import Path
 
 import cv2
@@ -72,7 +73,11 @@ def write_debug_sheet(rig: Rig, outdir: str | Path) -> list[Path]:
 
 
 def debug_command(args) -> int:
-    rig = load_rig(args.rig)
+    try:
+        rig = load_rig(args.rig)
+    except Exception as e:  # missing/corrupt .raig: clean exit, not a traceback
+        print(f"debug failed: cannot load rig {args.rig!r}: {e}", file=sys.stderr)
+        return 1
     written = write_debug_sheet(rig, args.outdir)
     print(f"wrote {len(written)} debug images to {args.outdir}")
     return 0

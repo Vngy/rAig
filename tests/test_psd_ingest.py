@@ -97,6 +97,18 @@ def test_duplicate_layer_names_are_uniquified(tmp_path):
     assert tuple(by_name["hair#2"].rgba[0, 0]) == (120, 80, 160, 255)
 
 
+def test_uniquify_alias_never_collides_with_literal_name():
+    from raig.compiler.psd_ingest import _uniquify_names
+
+    # a literal layer named "hair#2" must not collide with the alias
+    # generated for the second "hair"
+    out = _uniquify_names(["hair", "hair", "hair#2"])
+    assert len(set(out)) == 3
+    assert out[0] == "hair" and out[1] == "hair#2"
+    # plain repeated names still count up normally
+    assert _uniquify_names(["a", "a", "a"]) == ["a", "a#2", "a#3"]
+
+
 class _FakeLayer:
     """Minimal stand-in for a psd-tools layer object, exposing only what
     load_layers touches (name, kind, parent, is_group(), composite(),

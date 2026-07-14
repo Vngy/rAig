@@ -34,12 +34,19 @@ def _uniquify_names(names: list[str]) -> list[str]:
     """Disambiguate duplicate layer names in encounter order:
     "name", "name#2", "name#3", ... Every downstream consumer (mesh/render
     dicts keyed on layer name) reads the post-ingest string, so this is the
-    only place duplicates need handling."""
-    seen: dict[str, int] = {}
+    only place duplicates need handling. Generated aliases are checked
+    against every name already emitted, so a literal layer named "name#2"
+    can never collide with an alias."""
+    counts: dict[str, int] = {}
+    used: set[str] = set()
     out: list[str] = []
     for name in names:
-        seen[name] = seen.get(name, 0) + 1
-        out.append(name if seen[name] == 1 else f"{name}#{seen[name]}")
+        candidate = name
+        while candidate in used:
+            counts[name] = counts.get(name, 1) + 1
+            candidate = f"{name}#{counts[name]}"
+        used.add(candidate)
+        out.append(candidate)
     return out
 
 
